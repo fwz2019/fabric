@@ -29,6 +29,9 @@ const (
 	// ECDSA Elliptic Curve Digital Signature Algorithm over P-384 curve
 	ECDSAP384 = "ECDSAP384"
 
+	// SM2 is an identifier for SM-2 algorithm.
+	SM2 = "SM2"
+
 	// ECDSAReRand ECDSA key re-randomization
 	ECDSAReRand = "ECDSA_RERAND"
 
@@ -79,6 +82,9 @@ const (
 	SHA3_256 = "SHA3_256"
 	// SHA3_384
 	SHA3_384 = "SHA3_384"
+
+	// SM3 is an identifier for SM-3 hash algorithm.
+	SM3 = "SM3"
 
 	// X509Certificate Label for X509 certificate related operation
 	X509Certificate = "X509Certificate"

@@ -20,7 +20,6 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"errors"
-	"fmt"
 
 	"github.com/hyperledger/fabric/bccsp"
 )
@@ -49,7 +48,9 @@ func (v *rsaPrivateKeyVerifier) Verify(k bccsp.Key, signature, digest []byte, op
 
 		return err == nil, err
 	default:
-		return false, fmt.Errorf("Opts type not recognized [%s]", opts)
+		err := rsa.VerifyPKCS1v15(&(k.(*rsaPrivateKey).privKey.PublicKey),
+			opts.HashFunc(), digest, signature)
+		return err == nil, err
 	}
 }
 
@@ -67,6 +68,8 @@ func (v *rsaPublicKeyKeyVerifier) Verify(k bccsp.Key, signature, digest []byte, 
 
 		return err == nil, err
 	default:
-		return false, fmt.Errorf("Opts type not recognized [%s]", opts)
+		err := rsa.VerifyPKCS1v15(k.(*rsaPublicKey).pubKey,
+			opts.HashFunc(), digest, signature)
+		return err == nil, err
 	}
 }

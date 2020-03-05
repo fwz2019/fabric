@@ -39,14 +39,14 @@ type CA struct {
 
 // NewCA creates an instance of CA and saves the signing key pair in
 // baseDir/name
-func NewCA(baseDir, org, name, country, province, locality, orgUnit, streetAddress, postalCode string) (*CA, error) {
+func NewCA(baseDir, org, name, country, province, locality, orgUnit, streetAddress, postalCode string, sm2 bool) (*CA, error) {
 
 	var response error
 	var ca *CA
 
 	err := os.MkdirAll(baseDir, 0755)
 	if err == nil {
-		priv, signer, err := csp.GeneratePrivateKey(baseDir)
+		priv, signer, err := csp.GeneratePrivateKey(baseDir, sm2)
 		response = err
 		if err == nil {
 			// get public signing certificate

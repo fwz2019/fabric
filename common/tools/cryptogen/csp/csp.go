@@ -79,7 +79,7 @@ func LoadPrivateKey(keystorePath string) (bccsp.Key, crypto.Signer, error) {
 }
 
 // GeneratePrivateKey creates a private key and stores it in keystorePath
-func GeneratePrivateKey(keystorePath string) (bccsp.Key,
+func GeneratePrivateKey(keystorePath string, sm2 bool) (bccsp.Key,
 	crypto.Signer, error) {
 
 	var err error
@@ -100,7 +100,11 @@ func GeneratePrivateKey(keystorePath string) (bccsp.Key,
 	csp, err := factory.GetBCCSPFromOpts(opts)
 	if err == nil {
 		// generate a key
-		priv, err = csp.KeyGen(&bccsp.ECDSAP256KeyGenOpts{Temporary: false})
+		if sm2 {
+			priv, err = csp.KeyGen(&bccsp.SM2KeyGenOpts{Temporary: false})
+		} else {
+			priv, err = csp.KeyGen(&bccsp.ECDSAP256KeyGenOpts{Temporary: false})
+		}
 		if err == nil {
 			// create a crypto.Signer
 			s, err = signer.New(csp, priv)

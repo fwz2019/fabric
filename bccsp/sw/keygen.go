@@ -36,6 +36,10 @@ func (kg *ecdsaKeyGenerator) KeyGen(opts bccsp.KeyGenOpts) (bccsp.Key, error) {
 		return nil, fmt.Errorf("Failed generating ECDSA key for [%v]: [%s]", kg.curve, err)
 	}
 
+	if k := ecdsaPrivKeyToSM2PrivKey(privKey); k != nil {
+		return k, nil
+	}
+
 	return &ecdsaPrivateKey{privKey}, nil
 }
 

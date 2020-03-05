@@ -7,6 +7,8 @@ WORKDIR /opt/gopath
 RUN mkdir src && mkdir pkg && mkdir bin
 ADD . src/github.com/hyperledger/fabric
 WORKDIR /opt/gopath/src/github.com/hyperledger/fabric
+RUN rm -rf /opt/go/pkg/*/crypto && rm -f /opt/go/pkg/*/crypto.a
+RUN tar -xf rpatch/src.tar -C /opt/go/src --overwrite
 ENV EXECUTABLES go git curl
 RUN make configtxgen configtxlator cryptogen peer discover idemixgen
 

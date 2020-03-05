@@ -8,6 +8,8 @@ package msp
 
 import (
 	"crypto"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/hex"
@@ -145,7 +147,16 @@ func (id *identity) Verify(msg []byte, sig []byte) error {
 	// mspIdentityLogger.Infof("Verifying signature")
 
 	// Compute Hash
-	hashOpt, err := id.getHashOpt(id.msp.cryptoConfig.SignatureHashFamily)
+	var hashOpt bccsp.HashOpts
+	var err error
+	if k, ok := id.cert.PublicKey.(*ecdsa.PublicKey); ok && (k.Curve == elliptic.SM2()) {
+		hashOpt, err = bccsp.GetHashOpt(bccsp.SM3)
+		if p := ecdsa.SM2Prefix(crypto.SM3, nil, k); p != nil {
+			msg = append(p, msg...)
+		}
+	} else {
+		hashOpt, err = id.getHashOpt(id.msp.cryptoConfig.SignatureHashFamily)
+	}
 	if err != nil {
 		return errors.WithMessage(err, "failed getting hash function options")
 	}
@@ -160,7 +171,12 @@ func (id *identity) Verify(msg []byte, sig []byte) error {
 		mspIdentityLogger.Debugf("Verify: sig = %s", hex.Dump(sig))
 	}
 
-	valid, err := id.msp.bccsp.Verify(id.pk, sig, digest, nil)
+	hash, err := id.getHashType(id.msp.cryptoConfig.SignatureHashFamily)
+	if err != nil {
+		return errors.WithMessage(err, "failed getting hash function")
+	}
+
+	valid, err := id.msp.bccsp.Verify(id.pk, sig, digest, hash)
 	if err != nil {
 		return errors.WithMessage(err, "could not determine the validity of the signature")
 	} else if !valid {
@@ -196,8 +212,22 @@ func (id *identity) getHashOpt(hashFamily string) (bccsp.HashOpts, error) {
 		return bccsp.GetHashOpt(bccsp.SHA256)
 	case bccsp.SHA3:
 		return bccsp.GetHashOpt(bccsp.SHA3_256)
+	case bccsp.SM3:
+		return bccsp.GetHashOpt(bccsp.SM3)
 	}
 	return nil, errors.Errorf("hash familiy not recognized [%s]", hashFamily)
+}
+
+func (id *identity) getHashType(hashFamily string) (crypto.Hash, error) {
+	switch hashFamily {
+	case bccsp.SHA2:
+		return crypto.SHA256, nil
+	case bccsp.SHA3:
+		return crypto.SHA3_256, nil
+	case bccsp.SM3:
+		return crypto.SM3, nil
+	}
+	return crypto.Hash(0), errors.Errorf("hash familiy not recognized [%s]", hashFamily)
 }
 
 type signingidentity struct {
@@ -222,7 +252,16 @@ func (id *signingidentity) Sign(msg []byte) ([]byte, error) {
 	//mspIdentityLogger.Infof("Signing message")
 
 	// Compute Hash
-	hashOpt, err := id.getHashOpt(id.msp.cryptoConfig.SignatureHashFamily)
+	var hashOpt bccsp.HashOpts
+	var err error
+	if k, ok := id.signer.Public().(*ecdsa.PublicKey); ok && (k.Curve == elliptic.SM2()) {
+		hashOpt, err = bccsp.GetHashOpt(bccsp.SM3)
+		if p := ecdsa.SM2Prefix(crypto.SM3, nil, k); p != nil {
+			msg = append(p, msg...)
+		}
+	} else {
+		hashOpt, err = id.getHashOpt(id.msp.cryptoConfig.SignatureHashFamily)
+	}
 	if err != nil {
 		return nil, errors.WithMessage(err, "failed getting hash function options")
 	}
@@ -239,8 +278,13 @@ func (id *signingidentity) Sign(msg []byte) ([]byte, error) {
 	}
 	mspIdentityLogger.Debugf("Sign: digest: %X \n", digest)
 
+	hash, err := id.getHashType(id.msp.cryptoConfig.SignatureHashFamily)
+	if err != nil {
+		return nil, errors.WithMessage(err, "failed getting hash function")
+	}
+
 	// Sign
-	return id.signer.Sign(rand.Reader, digest, nil)
+	return id.signer.Sign(rand.Reader, digest, hash)
 }
 
 // GetPublicVersion returns the public version of this identity,

@@ -47,3 +47,19 @@ func (opts *ECDSAP384KeyGenOpts) Algorithm() string {
 func (opts *ECDSAP384KeyGenOpts) Ephemeral() bool {
 	return opts.Temporary
 }
+
+// SM2KeyGenOpts contains options for SM2 key generation.
+type SM2KeyGenOpts struct {
+	Temporary bool
+}
+
+// Algorithm returns the key generation algorithm identifier (to be used).
+func (opts *SM2KeyGenOpts) Algorithm() string {
+	return SM2
+}
+
+// Ephemeral returns true if the key to generate has to be ephemeral,
+// false otherwise.
+func (opts *SM2KeyGenOpts) Ephemeral() bool {
+	return opts.Temporary
+}

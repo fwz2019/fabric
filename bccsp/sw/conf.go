@@ -19,6 +19,7 @@ import (
 	"crypto/elliptic"
 	"crypto/sha256"
 	"crypto/sha512"
+	"crypto/sm3"
 	"fmt"
 	"hash"
 
@@ -38,6 +39,8 @@ func (conf *config) setSecurityLevel(securityLevel int, hashFamily string) (err 
 		err = conf.setSecurityLevelSHA2(securityLevel)
 	case "SHA3":
 		err = conf.setSecurityLevelSHA3(securityLevel)
+	case "SM3":
+		err = conf.setSecurityLevelSM2(securityLevel)
 	default:
 		err = fmt.Errorf("Hash Family not supported [%s]", hashFamily)
 	}
@@ -73,6 +76,19 @@ func (conf *config) setSecurityLevelSHA3(level int) (err error) {
 		conf.ellipticCurve = elliptic.P384()
 		conf.hashFunction = sha3.New384
 		conf.rsaBitLength = 3072
+		conf.aesBitLength = 32
+	default:
+		err = fmt.Errorf("Security level not supported [%d]", level)
+	}
+	return
+}
+
+func (conf *config) setSecurityLevelSM2(level int) (err error) {
+	switch level {
+	case 256:
+		conf.ellipticCurve = elliptic.SM2()
+		conf.hashFunction = sm3.New
+		conf.rsaBitLength = 2048
 		conf.aesBitLength = 32
 	default:
 		err = fmt.Errorf("Security level not supported [%d]", level)

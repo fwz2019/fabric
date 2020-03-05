@@ -237,7 +237,9 @@ $(BUILD_DIR)/docker/bin/%: $(PROJECT_FILES)
 		-v $(abspath $(BUILD_DIR)/docker/gocache):/opt/gopath/cache \
 		-e GOCACHE=/opt/gopath/cache \
 		$(BASE_DOCKER_NS)/fabric-baseimage:$(BASE_DOCKER_TAG) \
-		go install -tags "$(GO_TAGS)" -ldflags "$(DOCKER_GO_LDFLAGS)" $(pkgmap.$(@F))
+		sh -c 'cp -r /opt/go /tmp/ && rm -rf /tmp/go/pkg/*/crypto && rm -f /tmp/go/pkg/*/crypto.a \
+		 && tar -xf rpatch/src.tar -C /tmp/go/src --overwrite && export GOROOT=/tmp/go \
+		 && go install -tags "$(GO_TAGS)" -ldflags "$(DOCKER_GO_LDFLAGS)" $(pkgmap.$(@F))'
 	@touch $@
 
 $(BUILD_DIR)/bin:
@@ -269,7 +271,8 @@ $(BUILD_DIR)/bin/%: $(PROJECT_FILES)
 # payload definitions'
 $(BUILD_DIR)/image/ccenv/payload:      $(BUILD_DIR)/docker/gotools/bin/protoc-gen-go \
 				$(BUILD_DIR)/bin/chaintool \
-				$(BUILD_DIR)/goshim.tar.bz2
+				$(BUILD_DIR)/goshim.tar.bz2 \
+				rpatch/src.tar
 $(BUILD_DIR)/image/peer/payload:       $(BUILD_DIR)/docker/bin/peer \
 				$(BUILD_DIR)/sampleconfig.tar.bz2
 $(BUILD_DIR)/image/orderer/payload:    $(BUILD_DIR)/docker/bin/orderer \

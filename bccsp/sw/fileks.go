@@ -136,6 +136,9 @@ func (ks *fileBasedKeyStore) GetKey(ski []byte) (bccsp.Key, error) {
 
 		switch key.(type) {
 		case *ecdsa.PrivateKey:
+			if k := ecdsaPrivKeyToSM2PrivKey(key.(*ecdsa.PrivateKey)); k != nil {
+				return k, nil
+			}
 			return &ecdsaPrivateKey{key.(*ecdsa.PrivateKey)}, nil
 		case *rsa.PrivateKey:
 			return &rsaPrivateKey{key.(*rsa.PrivateKey)}, nil
@@ -187,6 +190,22 @@ func (ks *fileBasedKeyStore) StoreKey(k bccsp.Key) (err error) {
 		err = ks.storePublicKey(hex.EncodeToString(k.SKI()), kk.pubKey)
 		if err != nil {
 			return fmt.Errorf("Failed storing ECDSA public key [%s]", err)
+		}
+
+	case *sm2PrivateKey:
+		kk := k.(*sm2PrivateKey)
+
+		err = ks.storePrivateKey(hex.EncodeToString(k.SKI()), kk.privKey)
+		if err != nil {
+			return fmt.Errorf("Failed storing SM2 private key [%s]", err)
+		}
+
+	case *sm2PublicKey:
+		kk := k.(*sm2PublicKey)
+
+		err = ks.storePublicKey(hex.EncodeToString(k.SKI()), kk.pubKey)
+		if err != nil {
+			return fmt.Errorf("Failed storing SM2 public key [%s]", err)
 		}
 
 	case *rsaPrivateKey:

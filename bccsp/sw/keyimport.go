@@ -84,6 +84,10 @@ func (*ecdsaPKIXPublicKeyImportOptsKeyImporter) KeyImport(raw interface{}, opts 
 		return nil, errors.New("Failed casting to ECDSA public key. Invalid raw material.")
 	}
 
+	if k := ecdsaPubKeyToSM2PubKey(ecdsaPK); k != nil {
+		return k, nil
+	}
+
 	return &ecdsaPublicKey{ecdsaPK}, nil
 }
 
@@ -109,6 +113,10 @@ func (*ecdsaPrivateKeyImportOptsKeyImporter) KeyImport(raw interface{}, opts bcc
 		return nil, errors.New("Failed casting to ECDSA private key. Invalid raw material.")
 	}
 
+	if k := ecdsaPrivKeyToSM2PrivKey(ecdsaSK); k != nil {
+		return k, nil
+	}
+
 	return &ecdsaPrivateKey{ecdsaSK}, nil
 }
 
@@ -118,6 +126,10 @@ func (*ecdsaGoPublicKeyImportOptsKeyImporter) KeyImport(raw interface{}, opts bc
 	lowLevelKey, ok := raw.(*ecdsa.PublicKey)
 	if !ok {
 		return nil, errors.New("Invalid raw material. Expected *ecdsa.PublicKey.")
+	}
+
+	if k := ecdsaPubKeyToSM2PubKey(lowLevelKey); k != nil {
+		return k, nil
 	}
 
 	return &ecdsaPublicKey{lowLevelKey}, nil
