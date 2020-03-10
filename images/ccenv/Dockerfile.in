@@ -6,6 +6,7 @@ FROM _BASE_NS_/fabric-baseimage:_BASE_TAG_
 RUN rm -rf /opt/go/pkg/*/crypto && rm -f /opt/go/pkg/*/crypto.a
 ADD payload/src.tar $GOROOT/src/
 RUN npm install -g npm@latest
+RUN npm config set unsafe-perm true
 COPY payload/chaintool payload/protoc-gen-go /usr/local/bin/
 ADD payload/goshim.tar.bz2 $GOPATH/src/
 RUN mkdir -p /chaincode/input /chaincode/output
