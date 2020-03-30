@@ -1,3 +1,6 @@
+# Hyperledger Fabric with SM2 and SM3
+
+**Note:** If you need a native compile, please merge your standard packages with rpatch/src.tar.
 
 # Hyperledger Fabric [![join the chat][rocketchat-image]][rocketchat-url]
 
@@ -9,8 +12,6 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/hyperledger/fabric)](https://goreportcard.com/report/github.com/hyperledger/fabric)
 [![GoDoc](https://godoc.org/github.com/hyperledger/fabric?status.svg)](https://godoc.org/github.com/hyperledger/fabric)
 [![Documentation Status](https://readthedocs.org/projects/hyperledger-fabric/badge/?version=release-1.4)](http://hyperledger-fabric.readthedocs.io/en/release-1.4/?badge=release-1.4)
-
-**Note:** If you need a native compile, please merge your standard packages with rpatch/src.tar.
 
 **Note:** This is a **read-only mirror** of the formal [Gerrit](https://gerrit.hyperledger.org/r/#/admin/projects/fabric) repository,
 where active development is ongoing. Issue tracking is handled in [Jira](https://jira.hyperledger.org/secure/Dashboard.jspa?selectPageId=10104).
