@@ -571,6 +571,10 @@ func (id *idemixidentity) GetMSPIdentifier() string {
 	return mspid
 }
 
+func (id *idemixidentity) GetOrganizations() []string {
+	panic("not implemented")
+}
+
 func (id *idemixidentity) GetOrganizationalUnits() []*OUIdentifier {
 	// we use the (serialized) public key of this MSP as the CertifiersIdentifier
 	certifiersIdentifier, err := id.msp.ipk.Bytes()

@@ -135,6 +135,10 @@ type Identity interface {
 	// authority.
 	Validate() error
 
+	// GetOrganizations returns zero or more organizations as long as
+	// this is public information.
+	GetOrganizations() []string
+
 	// GetOrganizationalUnits returns zero or more organization units or
 	// divisions this identity is related to as long as this is public
 	// information. Certain MSP implementations may use attributes

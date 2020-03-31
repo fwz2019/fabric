@@ -50,6 +50,9 @@ type NodeOUs struct {
 // Configuration represents the accessory configuration an MSP can be equipped with.
 // By default, this configuration is stored in a yaml file
 type Configuration struct {
+	// OrganizationIdentifiers is a list of Os. If this is set, the MSP
+	// will consider an identity valid only it contains at least one of these Os
+	OrganizationIdentifiers []string `yaml:"OrganizationIdentifiers,omitempty"`
 	// OrganizationalUnitIdentifiers is a list of OUs. If this is set, the MSP
 	// will consider an identity valid only it contains at least one of these OUs
 	OrganizationalUnitIdentifiers []*OrganizationalUnitIdentifiersConfiguration `yaml:"OrganizationalUnitIdentifiers,omitempty"`
@@ -261,6 +264,7 @@ func getMspConfig(dir string, ID string, sigid *msp.SigningIdentityInfo) (*msp.M
 	// otherwise skip it
 	var ouis []*msp.FabricOUIdentifier
 	var nodeOUs *msp.FabricNodeOUs
+	var ois []string
 	_, err = os.Stat(configFile)
 	if err == nil {
 		// load the file, if there is a failure in loading it then
@@ -274,6 +278,13 @@ func getMspConfig(dir string, ID string, sigid *msp.SigningIdentityInfo) (*msp.M
 		err = yaml.Unmarshal(raw, &configuration)
 		if err != nil {
 			return nil, errors.Wrapf(err, "failed unmarshalling configuration file at [%s]", configFile)
+		}
+
+		// Prepare OrganizationIdentifiers
+		if len(configuration.OrganizationIdentifiers) > 0 {
+			for _, oID := range configuration.OrganizationIdentifiers {
+				ois = append(ois, oID)
+			}
 		}
 
 		// Prepare OrganizationalUnitIdentifiers
@@ -348,6 +359,7 @@ func getMspConfig(dir string, ID string, sigid *msp.SigningIdentityInfo) (*msp.M
 		IntermediateCerts:             intermediatecerts,
 		SigningIdentity:               sigid,
 		Name:                          ID,
+		OrganizationIdentifiers:       ois,
 		OrganizationalUnitIdentifiers: ouis,
 		RevocationList:                crls,
 		CryptoConfig:                  cryptoConfig,

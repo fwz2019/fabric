@@ -96,6 +96,15 @@ func (id *identity) Validate() error {
 	return id.msp.Validate(id)
 }
 
+// GetOrganizations returns the Os for this instance
+func (id *identity) GetOrganizations() []string {
+	if id.cert == nil {
+		return nil
+	}
+
+	return id.cert.Subject.Organization
+}
+
 // GetOrganizationalUnits returns the OU for this instance
 func (id *identity) GetOrganizationalUnits() []*OUIdentifier {
 	if id.cert == nil {

@@ -29,6 +29,11 @@ func (msp *bccspmsp) validateIdentity(id *identity) error {
 		return errors.WithMessage(err, "could not validate identity against certification chain")
 	}
 
+	err = msp.validateIdentityOs(id)
+	if err != nil {
+		return errors.WithMessage(err, "could not validate identity's Os")
+	}
+
 	err = msp.internalValidateIdentityOusFunc(id)
 	if err != nil {
 		return errors.WithMessage(err, "could not validate identity's OUs")
@@ -120,6 +125,30 @@ func (msp *bccspmsp) validateCertAgainstChain(cert *x509.Certificate, validation
 					return errors.New("The certificate has been revoked")
 				}
 			}
+		}
+	}
+
+	return nil
+}
+
+func (msp *bccspmsp) validateIdentityOs(id *identity) error {
+	if len(msp.oIdentifiers) > 0 {
+		found := false
+
+		for _, org := range id.GetOrganizations() {
+			for _, oID := range msp.oIdentifiers {
+				if org == oID {
+					found = true
+					break
+				}
+			}
+		}
+
+		if !found {
+			if len(id.GetOrganizations()) == 0 {
+				return errors.New("the identity certificate does not contain an Organization (O)")
+			}
+			return errors.Errorf("none of the identity's organizations [%v] are in MSP %s", id.GetOrganizations(), msp.name)
 		}
 	}
 

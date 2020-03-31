@@ -387,6 +387,17 @@ func (msp *bccspmsp) setupSigningIdentity(conf *m.FabricMSPConfig) error {
 	return nil
 }
 
+func (msp *bccspmsp) setupOs(conf *m.FabricMSPConfig) error {
+	var ois []string
+	for _, o := range conf.OrganizationIdentifiers {
+		ois = append(ois, o)
+	}
+
+	msp.oIdentifiers = ois
+
+	return nil
+}
+
 func (msp *bccspmsp) setupOUs(conf *m.FabricMSPConfig) error {
 	msp.ouIdentifiers = make(map[string][][]byte)
 	for _, ou := range conf.OrganizationalUnitIdentifiers {
@@ -521,6 +532,11 @@ func (msp *bccspmsp) preSetupV1(conf *m.FabricMSPConfig) error {
 		return err
 	}
 
+	// setup the Os
+	if err := msp.setupOs(conf); err != nil {
+		return err
+	}
+
 	// setup the OUs
 	if err := msp.setupOUs(conf); err != nil {
 		return err
@@ -557,6 +573,11 @@ func (msp *bccspmsp) preSetupV143(conf *m.FabricMSPConfig) error {
 
 	// setup TLS CAs
 	if err := msp.setupTLSCAs(conf); err != nil {
+		return err
+	}
+
+	// setup the Os
+	if err := msp.setupOs(conf); err != nil {
 		return err
 	}
 

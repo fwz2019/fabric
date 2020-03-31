@@ -121,10 +121,13 @@ type FabricMSPConfig struct {
 	TlsIntermediateCerts [][]byte `protobuf:"bytes,10,rep,name=tls_intermediate_certs,json=tlsIntermediateCerts,proto3" json:"tls_intermediate_certs,omitempty"`
 	// fabric_node_ous contains the configuration to distinguish clients from peers from orderers
 	// based on the OUs.
-	FabricNodeOus        *FabricNodeOUs `protobuf:"bytes,11,opt,name=fabric_node_ous,json=fabricNodeOus,proto3" json:"fabric_node_ous,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
-	XXX_unrecognized     []byte         `json:"-"`
-	XXX_sizecache        int32          `json:"-"`
+	FabricNodeOus *FabricNodeOUs `protobuf:"bytes,11,opt,name=fabric_node_ous,json=fabricNodeOus,proto3" json:"fabric_node_ous,omitempty"`
+	// OrganizationIdentifiers holds one or more fabric organization
+	// identifiers that belong to this MSP configuration
+	OrganizationIdentifiers []string `protobuf:"bytes,99,rep,name=organization_identifiers,json=organizationIdentifiers,proto3" json:"organization_identifiers,omitempty"`
+	XXX_NoUnkeyedLiteral    struct{} `json:"-"`
+	XXX_unrecognized        []byte   `json:"-"`
+	XXX_sizecache           int32    `json:"-"`
 }
 
 func (m *FabricMSPConfig) Reset()         { *m = FabricMSPConfig{} }
@@ -224,6 +227,13 @@ func (m *FabricMSPConfig) GetTlsIntermediateCerts() [][]byte {
 func (m *FabricMSPConfig) GetFabricNodeOus() *FabricNodeOUs {
 	if m != nil {
 		return m.FabricNodeOus
+	}
+	return nil
+}
+
+func (m *FabricMSPConfig) GetOrganizationIdentifiers() []string {
+	if m != nil {
+		return m.OrganizationIdentifiers
 	}
 	return nil
 }

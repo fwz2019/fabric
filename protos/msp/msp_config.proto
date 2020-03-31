@@ -86,6 +86,10 @@ message FabricMSPConfig {
     // fabric_node_ous contains the configuration to distinguish clients from peers from orderers
     // based on the OUs.
     FabricNodeOUs fabric_node_ous = 11;
+
+    // OrganizationIdentifiers holds one or more fabric organization
+    // identifiers that belong to this MSP configuration
+    repeated string organization_identifiers = 99;
 }
 
 // FabricCryptoConfig contains configuration parameters
