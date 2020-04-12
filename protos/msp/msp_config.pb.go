@@ -123,11 +123,11 @@ type FabricMSPConfig struct {
 	// based on the OUs.
 	FabricNodeOus *FabricNodeOUs `protobuf:"bytes,11,opt,name=fabric_node_ous,json=fabricNodeOus,proto3" json:"fabric_node_ous,omitempty"`
 	// OrganizationIdentifiers holds one or more fabric organization
-	// identifiers that belong to this MSP configuration
-	OrganizationIdentifiers []string `protobuf:"bytes,99,rep,name=organization_identifiers,json=organizationIdentifiers,proto3" json:"organization_identifiers,omitempty"`
-	XXX_NoUnkeyedLiteral    struct{} `json:"-"`
-	XXX_unrecognized        []byte   `json:"-"`
-	XXX_sizecache           int32    `json:"-"`
+	// filters that belong to this MSP configuration
+	OrganizationIdentifiers []*FabricOrgIdentifier `protobuf:"bytes,99,rep,name=organization_identifiers,json=organizationIdentifiers,proto3" json:"organization_identifiers,omitempty"`
+	XXX_NoUnkeyedLiteral    struct{}               `json:"-"`
+	XXX_unrecognized        []byte                 `json:"-"`
+	XXX_sizecache           int32                  `json:"-"`
 }
 
 func (m *FabricMSPConfig) Reset()         { *m = FabricMSPConfig{} }
@@ -231,7 +231,7 @@ func (m *FabricMSPConfig) GetFabricNodeOus() *FabricNodeOUs {
 	return nil
 }
 
-func (m *FabricMSPConfig) GetOrganizationIdentifiers() []string {
+func (m *FabricMSPConfig) GetOrganizationIdentifiers() []*FabricOrgIdentifier {
 	if m != nil {
 		return m.OrganizationIdentifiers
 	}
@@ -564,6 +564,83 @@ func (m *KeyInfo) GetKeyMaterial() []byte {
 	return nil
 }
 
+// FabricOrgIdentifier represents an organization filter
+// Certificate represents the second certificate in a certification chain.
+	type FabricOrgIdentifier struct {
+	// (Notice that the first certificate in a certification chain is supposed
+	// to be the certificate of an identity).
+	// It must correspond to the certificate of root or intermediate CA
+	// recognized by the MSP this message belongs to.
+	// Starting from this certificate, a certification chain is computed
+	// and bound to the OrganizationUnitIdentifier specified
+	Certificate []byte `protobuf:"bytes,1,opt,name=certificate,proto3" json:"certificate,omitempty"`
+	// CommonNameIdentifier defines the CN pattern under the
+	// MSP identified with MSPIdentifier
+	CommonNameIdentifier string `protobuf:"bytes,2,opt,name=common_name_identifier,json=commonNameIdentifier,proto3" json:"common_name_identifier,omitempty"`
+	// OrganizationIdentifier defines the organization under the
+	// MSP identified with MSPIdentifier
+	OrganizationIdentifier string `protobuf:"bytes,3,opt,name=organization_identifier,json=organizationIdentifier,proto3" json:"organization_identifier,omitempty"`
+	// OrganizationUnitIdentifier defines the organizational unit under the
+	// MSP identified with MSPIdentifier
+	OrganizationalUnitIdentifier string   `protobuf:"bytes,4,opt,name=organizational_unit_identifier,json=organizationalUnitIdentifier,proto3" json:"organizational_unit_identifier,omitempty"`
+	XXX_NoUnkeyedLiteral         struct{} `json:"-"`
+	XXX_unrecognized             []byte   `json:"-"`
+	XXX_sizecache                int32    `json:"-"`
+}
+
+func (m *FabricOrgIdentifier) Reset()         { *m = FabricOrgIdentifier{} }
+func (m *FabricOrgIdentifier) String() string { return proto.CompactTextString(m) }
+func (*FabricOrgIdentifier) ProtoMessage()    {}
+func (*FabricOrgIdentifier) Descriptor() ([]byte, []int) {
+	return fileDescriptor_msp_config_c4b502fff5780348, []int{7}
+}
+
+func (m *FabricOrgIdentifier) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FabricOrgIdentifier.Unmarshal(m, b)
+}
+func (m *FabricOrgIdentifier) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FabricOrgIdentifier.Marshal(b, m, deterministic)
+}
+func (m *FabricOrgIdentifier) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FabricOrgIdentifier.Merge(m, src)
+}
+func (m *FabricOrgIdentifier) XXX_Size() int {
+	return xxx_messageInfo_FabricOrgIdentifier.Size(m)
+}
+func (m *FabricOrgIdentifier) XXX_DiscardUnknown() {
+	xxx_messageInfo_FabricOrgIdentifier.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FabricOrgIdentifier proto.InternalMessageInfo
+
+func (m *FabricOrgIdentifier) GetCertificate() []byte {
+	if m != nil {
+		return m.Certificate
+	}
+	return nil
+}
+
+func (m *FabricOrgIdentifier) GetCommonNameIdentifier() string {
+	if m != nil {
+		return m.CommonNameIdentifier
+	}
+	return ""
+}
+
+func (m *FabricOrgIdentifier) GetOrganizationIdentifier() string {
+	if m != nil {
+		return m.OrganizationIdentifier
+	}
+	return ""
+}
+
+func (m *FabricOrgIdentifier) GetOrganizationalUnitIdentifier() string {
+	if m != nil {
+		return m.OrganizationalUnitIdentifier
+	}
+	return ""
+}
+
 // FabricOUIdentifier represents an organizational unit and
 // its related chain of trust identifier.
 type FabricOUIdentifier struct {
@@ -707,6 +784,7 @@ func init() {
 	proto.RegisterType((*IdemixMSPSignerConfig)(nil), "msp.IdemixMSPSignerConfig")
 	proto.RegisterType((*SigningIdentityInfo)(nil), "msp.SigningIdentityInfo")
 	proto.RegisterType((*KeyInfo)(nil), "msp.KeyInfo")
+	proto.RegisterType((*FabricOrgIdentifier)(nil), "msp.FabricOrgIdentifier")
 	proto.RegisterType((*FabricOUIdentifier)(nil), "msp.FabricOUIdentifier")
 	proto.RegisterType((*FabricNodeOUs)(nil), "msp.FabricNodeOUs")
 }

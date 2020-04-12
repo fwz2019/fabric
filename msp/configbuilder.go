@@ -21,6 +21,18 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// OrganizationIdentifiersConfiguration is used to filter an organization
+type OrganizationIdentifiersConfiguration struct {
+	// Certificate is the path to a root or intermediate certificate
+	Certificate string `yaml:"Certificate,omitempty"`
+	// CommonNameIdentifier is the pattern of the CN
+	CommonNameIdentifier string `yaml:"CommonNameIdentifier,omitempty"`
+	// OrganizationIdentifier is the name of the O
+	OrganizationIdentifier string `yaml:"OrganizationIdentifier,omitempty"`
+	// OrganizationalUnitIdentifier is the name of the OU
+	OrganizationalUnitIdentifier string `yaml:"OrganizationalUnitIdentifier,omitempty"`
+}
+
 // OrganizationalUnitIdentifiersConfiguration is used to represent an OU
 // and an associated trusted certificate
 type OrganizationalUnitIdentifiersConfiguration struct {
@@ -50,9 +62,9 @@ type NodeOUs struct {
 // Configuration represents the accessory configuration an MSP can be equipped with.
 // By default, this configuration is stored in a yaml file
 type Configuration struct {
-	// OrganizationIdentifiers is a list of Os. If this is set, the MSP
-	// will consider an identity valid only it contains at least one of these Os
-	OrganizationIdentifiers []string `yaml:"OrganizationIdentifiers,omitempty"`
+	// OrganizationIdentifiers is a list of filters. If this is set, the MSP
+	// will consider an identity valid only it meets at least one of these filters
+	OrganizationIdentifiers []*OrganizationIdentifiersConfiguration `yaml:"OrganizationIdentifiers,omitempty"`
 	// OrganizationalUnitIdentifiers is a list of OUs. If this is set, the MSP
 	// will consider an identity valid only it contains at least one of these OUs
 	OrganizationalUnitIdentifiers []*OrganizationalUnitIdentifiersConfiguration `yaml:"OrganizationalUnitIdentifiers,omitempty"`
@@ -262,9 +274,9 @@ func getMspConfig(dir string, ID string, sigid *msp.SigningIdentityInfo) (*msp.M
 	// Load configuration file
 	// if the configuration file is there then load it
 	// otherwise skip it
+	var orgis []*msp.FabricOrgIdentifier
 	var ouis []*msp.FabricOUIdentifier
 	var nodeOUs *msp.FabricNodeOUs
-	var ois []string
 	_, err = os.Stat(configFile)
 	if err == nil {
 		// load the file, if there is a failure in loading it then
@@ -282,8 +294,20 @@ func getMspConfig(dir string, ID string, sigid *msp.SigningIdentityInfo) (*msp.M
 
 		// Prepare OrganizationIdentifiers
 		if len(configuration.OrganizationIdentifiers) > 0 {
-			for _, oID := range configuration.OrganizationIdentifiers {
-				ois = append(ois, oID)
+			for _, orgID := range configuration.OrganizationIdentifiers {
+				f := filepath.Join(dir, orgID.Certificate)
+				raw, err = readFile(f)
+				if err != nil {
+					return nil, errors.Wrapf(err, "failed loading Organization certificate at [%s]", f)
+				}
+
+				orgi := &msp.FabricOrgIdentifier{
+					Certificate:                  raw,
+					CommonNameIdentifier:         orgID.CommonNameIdentifier,
+					OrganizationIdentifier:       orgID.OrganizationIdentifier,
+					OrganizationalUnitIdentifier: orgID.OrganizationalUnitIdentifier,
+				}
+				orgis = append(orgis, orgi)
 			}
 		}
 
@@ -359,7 +383,7 @@ func getMspConfig(dir string, ID string, sigid *msp.SigningIdentityInfo) (*msp.M
 		IntermediateCerts:             intermediatecerts,
 		SigningIdentity:               sigid,
 		Name:                          ID,
-		OrganizationIdentifiers:       ois,
+		OrganizationIdentifiers:       orgis,
 		OrganizationalUnitIdentifiers: ouis,
 		RevocationList:                crls,
 		CryptoConfig:                  cryptoConfig,

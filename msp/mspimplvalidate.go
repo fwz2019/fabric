@@ -15,6 +15,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/minio/minio/pkg/wildcard"
 	"github.com/pkg/errors"
 )
 
@@ -29,9 +30,9 @@ func (msp *bccspmsp) validateIdentity(id *identity) error {
 		return errors.WithMessage(err, "could not validate identity against certification chain")
 	}
 
-	err = msp.validateIdentityOs(id)
+	err = msp.validateIdentityOrgs(id)
 	if err != nil {
-		return errors.WithMessage(err, "could not validate identity's Os")
+		return errors.WithMessage(err, "could not validate identity's Orgs")
 	}
 
 	err = msp.internalValidateIdentityOusFunc(id)
@@ -131,24 +132,51 @@ func (msp *bccspmsp) validateCertAgainstChain(cert *x509.Certificate, validation
 	return nil
 }
 
-func (msp *bccspmsp) validateIdentityOs(id *identity) error {
-	if len(msp.oIdentifiers) > 0 {
+func (msp *bccspmsp) validateIdentityOrgs(id *identity) error {
+	if len(msp.orgIdentifiers) > 0 {
 		found := false
+		info := id.GetOrganizationInfo()
 
-		for _, org := range id.GetOrganizations() {
-			for _, oID := range msp.oIdentifiers {
-				if org == oID {
-					found = true
-					break
+		for _, org := range msp.orgIdentifiers {
+			if !bytes.Equal(info.CertifiersIdentifier, org.CertifiersIdentifier) {
+				continue
+			}
+			if len(org.CommonNameIdentifier) > 0 {
+				if !wildcard.Match(org.CommonNameIdentifier, info.CommonNameIdentifier) {
+					continue
 				}
 			}
+			if len(org.OrganizationIdentifier) > 0 {
+				of := false
+				for _, o := range info.OrganizationIdentifiers {
+					if o == org.OrganizationIdentifier {
+						of = true
+						break
+					}
+				}
+				if !of {
+					continue
+				}
+			}
+			if len(org.OrganizationalUnitIdentifier) > 0 {
+				ouf := false
+				for _, ou := range info.OrganizationalUnitIdentifiers {
+					if ou == org.OrganizationalUnitIdentifier {
+						ouf = true
+						break
+					}
+				}
+				if !ouf {
+					continue
+				}
+			}
+
+			found = true
+			break
 		}
 
 		if !found {
-			if len(id.GetOrganizations()) == 0 {
-				return errors.New("the identity certificate does not contain an Organization (O)")
-			}
-			return errors.Errorf("none of the identity's organizations [%v] are in MSP %s", id.GetOrganizations(), msp.name)
+			return errors.Errorf("none of the identity's organization info [%v] are in MSP %s", *id.GetOrganizationInfo(), msp.name)
 		}
 	}
 
@@ -298,6 +326,10 @@ func (msp *bccspmsp) getValidityOptsForCert(cert *x509.Certificate) x509.VerifyO
 	tempOpts.Intermediates = msp.opts.Intermediates
 	tempOpts.KeyUsages = msp.opts.KeyUsages
 	tempOpts.CurrentTime = cert.NotBefore.Add(time.Second)
+
+	if len(tempOpts.KeyUsages) == 0 {
+		tempOpts.KeyUsages = []x509.ExtKeyUsage{x509.ExtKeyUsageAny}
+	}
 
 	return tempOpts
 }

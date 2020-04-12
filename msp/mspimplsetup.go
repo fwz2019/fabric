@@ -387,13 +387,22 @@ func (msp *bccspmsp) setupSigningIdentity(conf *m.FabricMSPConfig) error {
 	return nil
 }
 
-func (msp *bccspmsp) setupOs(conf *m.FabricMSPConfig) error {
-	var ois []string
-	for _, o := range conf.OrganizationIdentifiers {
-		ois = append(ois, o)
-	}
+func (msp *bccspmsp) setupOrgs(conf *m.FabricMSPConfig) error {
+	msp.orgIdentifiers = make([]*OrgIdentifier, len(conf.OrganizationIdentifiers))
+	for i, org := range conf.OrganizationIdentifiers {
 
-	msp.oIdentifiers = ois
+		certifiersIdentifier, err := msp.getCertifiersIdentifier(org.Certificate)
+		if err != nil {
+			return errors.WithMessage(err, fmt.Sprintf("failed getting certificate for [%v]", org))
+		}
+
+		msp.orgIdentifiers[i] = &OrgIdentifier{
+			CertifiersIdentifier:         certifiersIdentifier,
+			CommonNameIdentifier:         org.CommonNameIdentifier,
+			OrganizationIdentifier:       org.OrganizationIdentifier,
+			OrganizationalUnitIdentifier: org.OrganizationalUnitIdentifier,
+		}
+	}
 
 	return nil
 }
@@ -532,8 +541,8 @@ func (msp *bccspmsp) preSetupV1(conf *m.FabricMSPConfig) error {
 		return err
 	}
 
-	// setup the Os
-	if err := msp.setupOs(conf); err != nil {
+	// setup the Orgs
+	if err := msp.setupOrgs(conf); err != nil {
 		return err
 	}
 
@@ -576,8 +585,8 @@ func (msp *bccspmsp) preSetupV143(conf *m.FabricMSPConfig) error {
 		return err
 	}
 
-	// setup the Os
-	if err := msp.setupOs(conf); err != nil {
+	// setup the Orgs
+	if err := msp.setupOrgs(conf); err != nil {
 		return err
 	}
 

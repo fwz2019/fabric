@@ -88,8 +88,8 @@ message FabricMSPConfig {
     FabricNodeOUs fabric_node_ous = 11;
 
     // OrganizationIdentifiers holds one or more fabric organization
-    // identifiers that belong to this MSP configuration
-    repeated string organization_identifiers = 99;
+    // filters that belong to this MSP configuration
+    repeated FabricOrgIdentifier organization_identifiers = 99;
 }
 
 // FabricCryptoConfig contains configuration parameters
@@ -176,6 +176,31 @@ message KeyInfo {
     // KeyMaterial (optional) for the key to be imported; this is
     // properly encoded key bytes, prefixed by the type of the key
     bytes key_material = 2;
+}
+
+// FabricOrgIdentifier represents an organization filter
+message FabricOrgIdentifier {
+
+    // Certificate represents the second certificate in a certification chain.
+    // (Notice that the first certificate in a certification chain is supposed
+    // to be the certificate of an identity).
+    // It must correspond to the certificate of root or intermediate CA
+    // recognized by the MSP this message belongs to.
+    // Starting from this certificate, a certification chain is computed
+    // and bound to the OrganizationUnitIdentifier specified
+    bytes certificate = 1;
+
+    // CommonNameIdentifier defines the CN pattern under the
+    // MSP identified with MSPIdentifier
+    string common_name_identifier = 2;
+
+	// OrganizationIdentifier defines the organization under the
+    // MSP identified with MSPIdentifier
+	string organization_identifier = 3;
+
+    // OrganizationUnitIdentifier defines the organizational unit under the
+    // MSP identified with MSPIdentifier
+    string organizational_unit_identifier = 4;
 }
 
 // FabricOUIdentifier represents an organizational unit and

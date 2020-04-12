@@ -97,12 +97,24 @@ func (id *identity) Validate() error {
 }
 
 // GetOrganizations returns the Os for this instance
-func (id *identity) GetOrganizations() []string {
+func (id *identity) GetOrganizationInfo() *OrganizationInfo {
 	if id.cert == nil {
 		return nil
 	}
 
-	return id.cert.Subject.Organization
+	cid, err := id.msp.getCertificationChainIdentifier(id)
+	if err != nil {
+		mspIdentityLogger.Errorf("Failed getting certification chain identifier for [%v]: [%+v]", id, err)
+
+		return nil
+	}
+
+	return &OrganizationInfo{
+		CertifiersIdentifier:          cid,
+		CommonNameIdentifier:          id.cert.Subject.CommonName,
+		OrganizationIdentifiers:       id.cert.Subject.Organization,
+		OrganizationalUnitIdentifiers: id.cert.Subject.OrganizationalUnit,
+	}
 }
 
 // GetOrganizationalUnits returns the OU for this instance

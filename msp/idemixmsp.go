@@ -571,7 +571,7 @@ func (id *idemixidentity) GetMSPIdentifier() string {
 	return mspid
 }
 
-func (id *idemixidentity) GetOrganizations() []string {
+func (id *idemixidentity) GetOrganizationInfo() *OrganizationInfo {
 	panic("not implemented")
 }
 

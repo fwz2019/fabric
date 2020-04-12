@@ -96,6 +96,35 @@ type MSP interface {
 	SatisfiesPrincipal(id Identity, principal *msp.MSPPrincipal) error
 }
 
+// OrganizationInfo represents organization info
+type OrganizationInfo struct {
+	// CertifiersIdentifier is the hash of certificates chain of trust
+	// related to this identifier
+	CertifiersIdentifier []byte
+	// CommonNameIdentifier is the common name
+	CommonNameIdentifier string
+	// OrganizationIdentifiers contains the organizations
+	OrganizationIdentifiers []string
+	// OrganizationalUnitIdentifiers contains the organizational units
+	OrganizationalUnitIdentifiers []string
+}
+
+// OrgIdentifier represents an organization filter
+type OrgIdentifier struct {
+	// CertifiersIdentifier is the hash of certificates chain of trust
+	// related to this organizational unit
+	CertifiersIdentifier []byte
+	// CommonNameIdentifier defines the common name pattern under the
+	// MSP identified with MSPIdentifier
+	CommonNameIdentifier string
+	// OrganizationIdentifier defines the organization under the
+	// MSP identified with MSPIdentifier
+	OrganizationIdentifier string
+	// OrganizationUnitIdentifier defines the organizational unit under the
+	// MSP identified with MSPIdentifier
+	OrganizationalUnitIdentifier string
+}
+
 // OUIdentifier represents an organizational unit and
 // its related chain of trust identifier.
 type OUIdentifier struct {
@@ -135,9 +164,9 @@ type Identity interface {
 	// authority.
 	Validate() error
 
-	// GetOrganizations returns zero or more organizations as long as
-	// this is public information.
-	GetOrganizations() []string
+	// GetOrganizationInfo returns organization info as long as
+	// this is public information
+	GetOrganizationInfo() *OrganizationInfo
 
 	// GetOrganizationalUnits returns zero or more organization units or
 	// divisions this identity is related to as long as this is public
