@@ -154,6 +154,9 @@ func (ks *fileBasedKeyStore) GetKey(ski []byte) (bccsp.Key, error) {
 
 		switch key.(type) {
 		case *ecdsa.PublicKey:
+			if k := ecdsaPubKeyToSM2PubKey(key.(*ecdsa.PublicKey)); k != nil {
+				return k, nil
+			}
 			return &ecdsaPublicKey{key.(*ecdsa.PublicKey)}, nil
 		case *rsa.PublicKey:
 			return &rsaPublicKey{key.(*rsa.PublicKey)}, nil
@@ -263,7 +266,11 @@ func (ks *fileBasedKeyStore) searchKeystoreForSKI(ski []byte) (k bccsp.Key, err 
 
 		switch key.(type) {
 		case *ecdsa.PrivateKey:
-			k = &ecdsaPrivateKey{key.(*ecdsa.PrivateKey)}
+			if sm2 := ecdsaPrivKeyToSM2PrivKey(key.(*ecdsa.PrivateKey)); sm2 != nil {
+				k = sm2
+			} else {
+				k = &ecdsaPrivateKey{key.(*ecdsa.PrivateKey)}
+			}
 		case *rsa.PrivateKey:
 			k = &rsaPrivateKey{key.(*rsa.PrivateKey)}
 		default:
